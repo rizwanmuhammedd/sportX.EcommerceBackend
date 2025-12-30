@@ -1,0 +1,6 @@
+@sportex.webApi_HostAddress = http://localhost:5206
+
+GET {{sportex.webApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
