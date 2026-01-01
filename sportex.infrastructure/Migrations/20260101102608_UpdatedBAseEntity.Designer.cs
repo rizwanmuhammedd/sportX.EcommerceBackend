@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sportex.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using Sportex.Infrastructure.Data;
 namespace sportex.Infrastructure.Migrations
 {
     [DbContext(typeof(SportexDbContext))]
-    partial class SportexDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260101102608_UpdatedBAseEntity")]
+    partial class UpdatedBAseEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -281,9 +284,6 @@ namespace sportex.Infrastructure.Migrations
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("isBlocked")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 

@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Sportex.Application.Common;
 using Sportex.Application.DTOs;
+using Sportex.Application.DTOs.Products;
 using Sportex.Application.Interfaces;
 using Sportex.Domain.Entities;
 using Sportex.Domain.Enums;
@@ -13,12 +16,13 @@ public class ProductsController : ControllerBase
     private readonly IProductRepository _repo;
     public ProductsController(IProductRepository repo) => _repo = repo;
 
-    // 1️⃣ GET ALL PRODUCTS
+    // 1️⃣ GET ALL PRODUCTS (Public)
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var products = await _repo.GetAllAsync();
-        return Ok(products.Select(p => new ProductDto
+
+        var result = products.Select(p => new ProductDto
         {
             Id = p.Id,
             Name = p.Name,
@@ -26,37 +30,55 @@ public class ProductsController : ControllerBase
             StockQuantity = p.StockQuantity,
             Category = p.Category.ToString(),
             ImageUrl = p.ImageUrl
-        }));
+        });
+
+        return Ok(ApiResponse.Success("Products fetched", result));
     }
 
-    // 2️⃣ GET PRODUCT BY ID
+    // 2️⃣ GET PRODUCT BY ID (Public)
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var product = await _repo.GetByIdAsync(id);
-        if (product == null) return NotFound("Product not found");
+        if (product == null)
+            return NotFound(ApiResponse.Fail(404, "Product not found"));
 
-        return Ok(product);
+        return Ok(ApiResponse.Success("Product found", product));
     }
 
-    // 3️⃣ ADD NEW PRODUCT
+    // 3️⃣ ADD NEW PRODUCT (Admin only)
+    [Authorize]
     [HttpPost]
-    public async Task<IActionResult> Add(Product product)
+    public async Task<IActionResult> Add(CreateProductDto dto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse.Fail(400, "Invalid product data"));
+
+        var product = new Product
+        {
+            Name = dto.Name.Trim(),
+            Price = dto.Price,
+            StockQuantity = dto.StockQuantity,
+            Category = dto.Category,
+            ImageUrl = dto.ImageUrl
+        };
+
         await _repo.AddAsync(product);
-        return Ok("Product Added");
+        return Ok(ApiResponse.Success("Product added successfully"));
     }
 
-    // 4️⃣ UPDATE STOCK (selling)
+    // 4️⃣ UPDATE STOCK
+    [Authorize]
     [HttpPut("stock/{id}")]
     public async Task<IActionResult> UpdateStock(int id, int quantity)
     {
         var product = await _repo.GetByIdAsync(id);
-        if (product == null) return NotFound("Product not found");
+        if (product == null)
+            return NotFound(ApiResponse.Fail(404, "Product not found"));
 
         product.StockQuantity = quantity;
         await _repo.UpdateAsync(product);
 
-        return Ok("Stock Updated");
+        return Ok(ApiResponse.Success("Stock updated"));
     }
 }

@@ -9,6 +9,5 @@ public class Product : BaseEntity
     public decimal Price { get; set; }
     public int StockQuantity { get; set; }
     public ProductCategory Category { get; set; }
-
-    public string? ImageUrl { get; set; }   // 🔥 ADD THIS LINE
+    public string? ImageUrl { get; set; }
 }
