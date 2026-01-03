@@ -65,16 +65,19 @@ public class CartController : ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> Add(AddToCartDto dto)
     {
-        int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        int userId = int.Parse(User.FindFirst("uid")!.Value);   // 🔥 FIXED
         await _service.AddToCartAsync(dto, userId);
-        return Ok(ApiResponse.Success("Item added to cart"));
+        var cart = await _service.GetCartAsync(userId);
+
+        return Ok(ApiResponse.Success("Item added to cart", cart));
+
     }
 
     // GET MY CART
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        int userId = int.Parse(User.FindFirst("uid")!.Value);   // 🔥 FIXED
         var data = await _service.GetCartAsync(userId);
         return Ok(ApiResponse.Success("Cart fetched", data));
     }
@@ -83,17 +86,21 @@ public class CartController : ControllerBase
     [HttpDelete("{cartItemId}")]
     public async Task<IActionResult> Remove(int cartItemId)
     {
-        int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        int userId = int.Parse(User.FindFirst("uid")!.Value);   // 🔥 FIXED
         await _service.RemoveItemAsync(cartItemId, userId);
-        return Ok(ApiResponse.Success("Item removed"));
+        var cart = await _service.GetCartAsync(userId);
+
+        return Ok(ApiResponse.Success("Item removed", cart));
+
     }
 
     // CLEAR CART
     [HttpDelete("clear")]
     public async Task<IActionResult> Clear()
     {
-        int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        int userId = int.Parse(User.FindFirst("uid")!.Value);   // 🔥 FIXED
         await _service.ClearCartAsync(userId);
-        return Ok(ApiResponse.Success("Cart cleared"));
+        return Ok(ApiResponse.Success("Cart cleared", new List<CartItemDto>()));
+
     }
 }

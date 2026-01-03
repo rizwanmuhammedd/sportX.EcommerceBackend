@@ -20,7 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IWishlistService, WishlistService>();
         services.AddScoped<IOrderService, OrderService>();
-        services.AddScoped<ICheckoutService, CheckoutService>();
+
 
 
 

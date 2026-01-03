@@ -2,6 +2,7 @@
 using Sportex.Application.DTOs.Orders;
 using Sportex.Application.Interfaces;
 using Sportex.Domain.Entities;
+using Sportex.Domain.Enums;
 using Sportex.Infrastructure.Data;
 
 namespace Sportex.Infrastructure.Services;
@@ -11,22 +12,27 @@ public class OrderService : IOrderService
     private readonly SportexDbContext _context;
     public OrderService(SportexDbContext context) => _context = context;
 
-    public async Task PlaceOrderAsync(CreateOrderDto dto)
+    // CART CHECKOUT
+    public async Task<int> PlaceOrderAsync(int userId, CreateCartOrderDto dto)
     {
         var cartItems = await _context.CartItems
             .Include(c => c.Product)
-            .Where(c => c.UserId == dto.UserId)
+            .Where(x => x.UserId == userId)
             .ToListAsync();
 
-        if (!cartItems.Any()) throw new Exception("Cart empty");
+        if (!cartItems.Any())
+            throw new Exception("Cart is empty");
 
-        var total = cartItems.Sum(x => x.Product.Price * x.Quantity);
+        using var trx = await _context.Database.BeginTransactionAsync();
 
+        decimal total = 0;
         var order = new Order
         {
-            UserId = dto.UserId,
-            ShippingAddress = dto.Address,
-            TotalAmount = total
+            UserId = userId,
+            ShippingAddress = dto.ShippingAddress,
+            Status = OrderStatus.Pending,
+            OrderDate = DateTime.UtcNow,
+            IsPaid = false
         };
 
         _context.Orders.Add(order);
@@ -34,18 +40,169 @@ public class OrderService : IOrderService
 
         foreach (var item in cartItems)
         {
-            _context.OrderItems.Add(new OrderItem
+            if (item.Quantity > item.Product.StockQuantity)
+                throw new Exception($"Not enough stock for {item.Product.Name}");
+
+            item.Product.StockQuantity -= item.Quantity;
+
+            var oi = new OrderItem
             {
                 OrderId = order.Id,
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                Price = item.Product.Price
-            });
+                UnitPrice = item.Product.Price
+            };
 
-            item.Product.StockQuantity -= item.Quantity;
+            total += item.Quantity * item.Product.Price;
+            _context.OrderItems.Add(oi);
         }
 
+        order.TotalAmount = total;
         _context.CartItems.RemoveRange(cartItems);
+
         await _context.SaveChangesAsync();
+        await trx.CommitAsync();
+        return order.Id;
+    }
+
+    // BUY NOW
+    public async Task<int> PlaceDirectOrderAsync(int userId, CreateDirectOrderDto dto)
+    {
+        if (!dto.Items.Any())
+            throw new Exception("No items selected");
+
+        using var trx = await _context.Database.BeginTransactionAsync();
+
+        var order = new Order
+        {
+            UserId = userId,
+            ShippingAddress = dto.ShippingAddress,
+            Status = OrderStatus.Pending,
+            IsPaid = false,
+            OrderDate = DateTime.UtcNow
+        };
+
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
+
+        decimal total = 0;
+
+        foreach (var item in dto.Items)
+        {
+            var product = await _context.Products.FindAsync(item.ProductId);
+            if (product == null) throw new Exception("Product not found");
+
+            if (item.Quantity < 1 || item.Quantity > product.StockQuantity)
+                throw new Exception($"Invalid quantity for {product.Name}");
+
+            product.StockQuantity -= item.Quantity;
+
+            var oi = new OrderItem
+            {
+                OrderId = order.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = product.Price
+            };
+
+            total += product.Price * item.Quantity;
+            _context.OrderItems.Add(oi);
+        }
+
+        order.TotalAmount = total;
+
+        await _context.SaveChangesAsync();
+        await trx.CommitAsync();
+        return order.Id;
+    }
+
+    // MY ORDERS
+    public async Task<List<OrderDto>> GetMyOrdersAsync(int userId)
+    {
+        return await _context.Orders
+            .Where(o => o.UserId == userId)
+            .Include(o => o.Items).ThenInclude(i => i.Product)
+            .Select(o => new OrderDto
+            {
+                Id = o.Id,
+                TotalAmount = o.TotalAmount,
+                ShippingAddress = o.ShippingAddress,
+                Status = o.Status,
+                IsPaid = o.IsPaid,
+                OrderDate = o.OrderDate,
+                Items = o.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    ImageUrl = i.Product.ImageUrl,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            }).ToListAsync();
+    }
+
+    public async Task<OrderDto?> GetOrderByIdAsync(int userId, int orderId)
+    {
+        return await _context.Orders
+            .Where(o => o.Id == orderId && o.UserId == userId)
+            .Include(o => o.Items).ThenInclude(i => i.Product)
+            .Select(o => new OrderDto
+            {
+                Id = o.Id,
+                TotalAmount = o.TotalAmount,
+                ShippingAddress = o.ShippingAddress,
+                Status = o.Status,
+                IsPaid = o.IsPaid,
+                OrderDate = o.OrderDate,
+                Items = o.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    ImageUrl = i.Product.ImageUrl,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            }).FirstOrDefaultAsync();
+    }
+
+    public async Task PayAsync(int userId, int orderId)
+    {
+        var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+        if (order == null) throw new Exception("Order not found");
+
+        order.IsPaid = true;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ToggleStatusAsync(int orderId)
+    {
+        var order = await _context.Orders.FindAsync(orderId);
+        if (order == null) throw new Exception("Order not found");
+
+        order.Status = order.Status == OrderStatus.Pending ? OrderStatus.Shipped : OrderStatus.Pending;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<OrderDto>> GetAllOrdersAsync()
+    {
+        return await _context.Orders
+            .Include(o => o.Items).ThenInclude(i => i.Product)
+            .Select(o => new OrderDto
+            {
+                Id = o.Id,
+                TotalAmount = o.TotalAmount,
+                ShippingAddress = o.ShippingAddress,
+                Status = o.Status,
+                IsPaid = o.IsPaid,
+                OrderDate = o.OrderDate,
+                Items = o.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    ImageUrl = i.Product.ImageUrl,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            }).ToListAsync();
     }
 }

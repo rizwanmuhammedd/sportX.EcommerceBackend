@@ -1,37 +1,50 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Sportex.Application.DTOs.Wishlist;
-using Sportex.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Sportex.Application.Common;
 
-
-namespace Sportex.WebApi.Controllers;
-
+[Authorize(Roles = "user")]
 [ApiController]
-[Route("api/wishlist")]
-[Authorize]
-
+[Route("api/[controller]")]
 public class WishlistController : ControllerBase
 {
     private readonly IWishlistService _service;
     public WishlistController(IWishlistService service) => _service = service;
 
+    private int UserId => int.Parse(User.FindFirst("uid")!.Value);
+
+    // ❤️ TOGGLE WISHLIST (Add / Remove)
     [HttpPost]
-    public async Task<IActionResult> Add(AddToWishlistDto dto)
+    public async Task<IActionResult> Toggle(AddToWishlistDto dto)
     {
-        await _service.AddAsync(dto);
-        return Ok("Added to wishlist");
+        var added = await _service.ToggleAsync(UserId, dto.ProductId);
+
+        return Ok(ApiResponse.Success(
+            added ? "Added to wishlist" : "Removed from wishlist",
+            new
+            {
+                productId = dto.ProductId,
+                isWishlisted = added
+            }
+        ));
     }
 
-    [HttpGet("{userId}")]
-    public async Task<IActionResult> Get(int userId)
+
+    // GET MY WISHLIST
+    [HttpGet]
+    public async Task<IActionResult> MyWishlist()
     {
-        return Ok(await _service.GetAsync(userId));
+        var data = await _service.GetMyWishlistAsync(UserId);
+        return Ok(ApiResponse.Success("Wishlist fetched", data));
     }
 
+    // REMOVE BY WISHLIST ITEM ID (optional manual remove)
     [HttpDelete("{id}")]
     public async Task<IActionResult> Remove(int id)
     {
-        await _service.RemoveAsync(id);
-        return Ok("Removed from wishlist");
+        var removed = await _service.RemoveAsync(UserId, id);
+
+        return Ok(ApiResponse.Success(
+            removed ? "Removed successfully" : "Wishlist item not found"
+        ));
     }
 }

@@ -18,6 +18,8 @@ public class SportexDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -77,9 +79,10 @@ public class SportexDbContext : DbContext
         {
             entity.HasKey(oi => oi.Id);
 
-            entity.Property(oi => oi.Price)
+            entity.Property(oi => oi.UnitPrice)
                   .HasPrecision(18, 2);  // Money safe
         });
+
 
         // CART
         modelBuilder.Entity<CartItem>(entity =>

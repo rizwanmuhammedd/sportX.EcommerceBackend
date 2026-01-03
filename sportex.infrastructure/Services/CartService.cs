@@ -65,8 +65,6 @@
 
 
 
-
-
 using Microsoft.EntityFrameworkCore;
 using Sportex.Application.DTOs.Cart;
 using Sportex.Application.Interfaces;
@@ -83,6 +81,16 @@ public class CartService : ICartService
     // ADD TO CART
     public async Task AddToCartAsync(AddToCartDto dto, int userId)
     {
+        var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == dto.ProductId);
+        if (product == null)
+            throw new Exception("Product not found");
+
+        if (dto.Quantity < 1)
+            throw new Exception("Minimum quantity is 1");
+
+        if (dto.Quantity > product.StockQuantity)
+            throw new Exception($"Only {product.StockQuantity} items left in stock");
+
         var item = await _context.CartItems
             .FirstOrDefaultAsync(x => x.UserId == userId && x.ProductId == dto.ProductId);
 
@@ -97,7 +105,12 @@ public class CartService : ICartService
         }
         else
         {
-            item.Quantity += dto.Quantity;
+            int newQty = item.Quantity + dto.Quantity;
+
+            if (newQty > product.StockQuantity)
+                throw new Exception($"You already have {item.Quantity}. Only {product.StockQuantity} in stock");
+
+            item.Quantity = newQty;
         }
 
         await _context.SaveChangesAsync();
@@ -137,4 +150,3 @@ public class CartService : ICartService
         await _context.SaveChangesAsync();
     }
 }
-

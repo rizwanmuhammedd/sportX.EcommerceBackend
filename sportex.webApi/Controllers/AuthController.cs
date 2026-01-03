@@ -79,8 +79,6 @@
 
 
 
-
-
 using Microsoft.AspNetCore.Mvc;
 using Sportex.Application.Common;
 using Sportex.Application.DTOs.Auth;
@@ -100,7 +98,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ApiResponse.Fail(400, "Invalid input"));
+            return BadRequest(ApiResponse.Fail(400, ModelState.Values
+                .SelectMany(v => v.Errors)
+                .First().ErrorMessage));
 
         await _service.RegisterAsync(dto);
         return Ok(ApiResponse.Success("Registered successfully"));
@@ -111,7 +111,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login(LoginDto dto)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ApiResponse.Fail(400, "Invalid login data"));
+            return BadRequest(ApiResponse.Fail(400, ModelState.Values
+                .SelectMany(v => v.Errors)
+                .First().ErrorMessage));
 
         var tokens = await _service.LoginAsync(dto);
         SetTokenCookies(tokens);
@@ -122,7 +124,6 @@ public class AuthController : ControllerBase
             refreshToken = tokens.RefreshToken
         }));
     }
-
 
     // REFRESH TOKEN
     [HttpPost("refresh")]
@@ -140,7 +141,6 @@ public class AuthController : ControllerBase
             accessToken = tokens.AccessToken,
             refreshToken = tokens.RefreshToken
         }));
-
     }
 
     // LOGOUT
