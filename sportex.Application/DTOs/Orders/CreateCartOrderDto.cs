@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Sportex.Application.DTOs.Orders;
-
-public class CreateCartOrderDto
+namespace Sportex.Application.DTOs.Orders
 {
-    [Required]
-    [MaxLength(300)]
-    public string ShippingAddress { get; set; } = "";
+
+    public class CreateCartOrderDto
+    {
+        [Required]
+        [MaxLength(300)]
+        public string ShippingAddress { get; set; } = "";
+    }
 }

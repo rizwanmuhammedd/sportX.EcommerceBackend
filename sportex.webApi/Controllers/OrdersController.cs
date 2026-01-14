@@ -95,6 +95,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sportex.Application.Common;
 using Sportex.Application.DTOs.Orders;
 using Sportex.Application.Interfaces;
+using Sportex.Domain.Enums;
 using System.Security.Claims;
 
 namespace Sportex.WebApi.Controllers;
@@ -154,15 +155,7 @@ public class OrderController : ControllerBase
         return Ok(ApiResponse.Success("Payment successful"));
     }
 
-    // ADMIN TOGGLE STATUS
-    [Authorize(Roles = "Admin")]
-    [HttpPatch("admin/toggle-status/{orderId}")]
-    public async Task<IActionResult> Toggle(int orderId)
-    {
-        await _service.ToggleStatusAsync(orderId);
-        return Ok(ApiResponse.Success("Order status updated"));
-    }
-
+    
     // ADMIN VIEW ALL
     [Authorize(Roles = "Admin")]
     [HttpGet("admin")]
@@ -171,4 +164,37 @@ public class OrderController : ControllerBase
         var data = await _service.GetAllOrdersAsync();
         return Ok(ApiResponse.Success("All orders", data));
     }
+
+
+
+    [Authorize(Roles = "user")]
+    [HttpPatch("Cancel/{orderId}")]
+    public async Task<IActionResult> Cancel(int orderId)
+    {
+        var result = await _service.CancelOrderAsync(UserId, orderId);
+        return Ok(ApiResponse.Success("Order cancelled successfully", result));
+    }
+
+
+    // ---------------- ADMIN STATUS CONTROL ----------------
+
+    // UPDATE ORDER STATUS
+    [Authorize(Roles = "Admin")]
+    [HttpPatch("admin/status/{orderId}")]
+    public async Task<IActionResult> UpdateStatus(int orderId, OrderStatus status)
+    {
+        await _service.UpdateOrderStatusAsync(orderId, status);
+        return Ok(ApiResponse.Success("Order status updated"));
+    }
+
+    // GET ORDERS BY STATUS
+    [Authorize(Roles = "Admin")]
+    [HttpGet("admin/status/{status}")]
+    public async Task<IActionResult> GetByStatus(OrderStatus status)
+    {
+        var data = await _service.GetOrdersByStatusAsync(status);
+        return Ok(ApiResponse.Success("Orders fetched", data));
+    }
+
+
 }

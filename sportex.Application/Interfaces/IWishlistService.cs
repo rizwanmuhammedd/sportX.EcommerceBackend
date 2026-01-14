@@ -1,16 +1,13 @@
-﻿//public interface IWishlistService
-//{
-//    Task<bool> AddAsync(int userId, int productId);
-//    Task<List<WishlistItemDto>> GetMyWishlistAsync(int userId);
-//    Task<bool> RemoveAsync(int userId, int wishlistId);
-//}
+﻿using Sportex.Application.DTOs.Wishlist;
 
-
-
+namespace Sportex.Application.Interfaces;
 
 public interface IWishlistService
 {
-    Task<bool> ToggleAsync(int userId, int productId);     // 🔥 ADD / REMOVE TOGGLE
-    Task<List<WishlistItemDto>> GetMyWishlistAsync(int userId);
-    Task<bool> RemoveAsync(int userId, int wishlistId);
+    Task AddAsync(int userId, int productId);
+    Task RemoveAsync(int userId, int productId);
+    Task<List<WishlistItemDto>> GetAsync(int userId);
+
+    // ❤️ Toggle (Add if not exists, Remove if exists)
+    Task ToggleAsync(int userId, int productId);
 }

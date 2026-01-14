@@ -1,12 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Sportex.Domain.Enums;
+﻿using Sportex.Domain.Enums;
+using System.ComponentModel;
+using Microsoft.AspNetCore.Http;
+
+using System.ComponentModel.DataAnnotations;
 
 namespace Sportex.Application.DTOs.Products
 {
     public class CreateProductDto
     {
-        [Required]
+        [DefaultValue("product")]
+
+        [Required(ErrorMessage = "Product name is required")]
         [MaxLength(100)]
+        [RegularExpression(
+            @"^[A-Za-z]+( [A-Za-z]+)*$",
+            ErrorMessage = "Name can contain only letters and single spaces between words"
+        )]
         public string Name { get; set; } = string.Empty;
 
         [Range(1, 100000)]
@@ -17,6 +26,6 @@ namespace Sportex.Application.DTOs.Products
 
         public ProductCategory Category { get; set; }
 
-        public string? ImageUrl { get; set; }
+        public IFormFile Image { get; set; } = null!;
     }
 }

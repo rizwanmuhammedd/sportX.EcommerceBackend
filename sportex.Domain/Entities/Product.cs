@@ -1,8 +1,6 @@
 ﻿using Sportex.Domain.Common;
 using Sportex.Domain.Enums;
 
-namespace Sportex.Domain.Entities;
-
 public class Product : BaseEntity
 {
     public string Name { get; set; } = "";
@@ -10,4 +8,6 @@ public class Product : BaseEntity
     public int StockQuantity { get; set; }
     public ProductCategory Category { get; set; }
     public string? ImageUrl { get; set; }
+
+    public bool IsActive { get; set; } = true;   // 🔥 ADD THIS
 }

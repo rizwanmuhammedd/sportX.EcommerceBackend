@@ -1,4 +1,13 @@
-﻿public class AddToWishlistDto
+﻿
+namespace Sportex.Application.DTOs.Wishlist
 {
-    public int ProductId { get; set; }
+
+
+    public class AddToWishlistDto
+
+
+
+    {
+        public int ProductId { get; set; }
+    }
 }

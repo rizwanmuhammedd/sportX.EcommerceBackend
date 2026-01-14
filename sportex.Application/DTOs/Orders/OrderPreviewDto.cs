@@ -1,7 +1,9 @@
-﻿namespace Sportex.Application.DTOs.Orders;
-
-public class OrderPreviewDto
+﻿namespace Sportex.Application.DTOs.Orders
 {
-    public List<OrderPreviewItemDto> Items { get; set; } = new();
-    public decimal TotalAmount { get; set; }
+
+    public class OrderPreviewDto
+    {
+        public List<OrderPreviewItemDto> Items { get; set; } = new();
+        public decimal TotalAmount { get; set; }
+    }
 }

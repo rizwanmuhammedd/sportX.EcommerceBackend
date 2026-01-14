@@ -117,17 +117,39 @@ public class CartService : ICartService
     }
 
     // GET USER CART
+    //public async Task<IEnumerable<CartItemDto>> GetCartAsync(int userId)
+    //{
+    //    return await _context.CartItems
+    //        .Where(x => x.UserId == userId)
+    //        .Select(x => new CartItemDto
+    //        {
+    //            Id = x.Id,
+    //            ProductId = x.ProductId,
+    //            Quantity = x.Quantity
+    //        }).ToListAsync();
+    //}
+
+
+
     public async Task<IEnumerable<CartItemDto>> GetCartAsync(int userId)
     {
         return await _context.CartItems
             .Where(x => x.UserId == userId)
-            .Select(x => new CartItemDto
-            {
-                Id = x.Id,
-                ProductId = x.ProductId,
-                Quantity = x.Quantity
-            }).ToListAsync();
+            .Join(_context.Products,
+                  c => c.ProductId,
+                  p => p.Id,
+                  (c, p) => new CartItemDto
+                  {
+                      Id = c.Id,
+                      ProductId = p.Id,
+                      ProductName = p.Name!,
+                      ImageUrl = p.ImageUrl!,
+                      Price = p.Price,
+                      Quantity = c.Quantity
+                  })
+            .ToListAsync();
     }
+
 
     // DELETE SINGLE ITEM (Secure)
     public async Task RemoveItemAsync(int cartItemId, int userId)

@@ -12,7 +12,7 @@ public static class AdminSeeder
             {
                 Name = "Super Admin",
                 Email = "risvan@sportx.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Risvan@123"), // 🔐 HASHED
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Risvan@123"),
                 Role = "Admin",
                 isBlocked = false,
                 CreatedOn = DateTime.UtcNow

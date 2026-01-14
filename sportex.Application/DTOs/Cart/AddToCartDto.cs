@@ -1,12 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Sportex.Application.DTOs.Cart;
-
-public class AddToCartDto
+namespace Sportex.Application.DTOs.Cart
 {
-    [Required]
-    public int ProductId { get; set; }
 
-    [Range(1, 100)]
-    public int Quantity { get; set; }
+    public class AddToCartDto
+    {
+        [Required]
+        public int ProductId { get; set; }
+
+        [Range(1, 100)]
+        public int Quantity { get; set; }
+    }
 }

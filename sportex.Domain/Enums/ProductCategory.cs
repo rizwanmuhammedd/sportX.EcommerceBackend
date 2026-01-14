@@ -1,22 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-// SportX.Domain/Enums/ProductCategory.cs
-namespace Sportex.Domain.Enums;
-
-public enum ProductCategory
+﻿namespace Sportex.Domain.Enums
 {
-    Boots = 1,
-    Balls = 2,
-    Jerseys = 3,
-    Gloves = 4,
-    Accessories = 5
+    public enum ProductCategory
+    {
+        Boots,
+        Balls,
+        Jerseys,
+        Gloves,
+        Accessories
+    }
 }
-
-
-
-// SportX.Domain/Enums/UserRole.cs
-

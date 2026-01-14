@@ -1,12 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
+using Sportex.Application.Interfaces;
+using Sportex.Domain.Entities;
+using Sportex.Infrastructure.Data;
 
-namespace sportex.Infrastructure.Respositories
+namespace Sportex.Infrastructure.Repositories;
+
+public class UserRepository : IUserRepository
 {
-    internal class UserRepository
+    private readonly SportexDbContext _context;
+
+    public UserRepository(SportexDbContext context)
     {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<User>> GetAllAsync()
+    {
+        return await _context.Users.AsNoTracking().ToListAsync();
+    }
+
+    public async Task<User?> GetByIdAsync(int id)
+    {
+        return await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<User?> GetByEmailAsync(string email)
+    {
+        return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+    }
+
+    public async Task UpdateAsync(User user)
+    {
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(User user)
+    {
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
     }
 }

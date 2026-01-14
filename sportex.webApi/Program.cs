@@ -1,260 +1,37 @@
-﻿
-
-
-
-
-
-
-//using Microsoft.AspNetCore.Authentication.JwtBearer;
-//using Microsoft.IdentityModel.Tokens;
-//using Microsoft.OpenApi.Models;
-//using Sportex.Infrastructure;
-//using Sportex.Infrastructure.Data;
-//using System.Text;
-
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Controllers
-//builder.Services.AddControllers();
-//builder.Services.AddEndpointsApiExplorer();
-
-//// Swagger + JWT Authorize Button
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new OpenApiInfo
-//    {
-//        Title = "Sportex API",
-//        Version = "v1",
-//        Description = "Sportex Ecommerce Backend"
-//    });
-
-//    // 🔐 JWT Authorize Button
-//    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-//    {
-//        Description = "Enter ONLY your access token (no 'Bearer ' word)",
-//        Name = "Authorization",
-//        In = ParameterLocation.Header,
-//        Type = SecuritySchemeType.Http,
-//        Scheme = "bearer",
-//        BearerFormat = "JWT"
-//    });
-
-//    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-//    {
-//        {
-//            new OpenApiSecurityScheme
-//            {
-//                Reference = new OpenApiReference
-//                {
-//                    Type = ReferenceType.SecurityScheme,
-//                    Id = "Bearer"
-//                }
-//            },
-//            Array.Empty<string>()
-//        }
-//    });
-//});
-
-//// Clean Architecture DI
-//builder.Services.AddInfrastructure(builder.Configuration);
-
-//// JWT + COOKIE SUPPORT
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//.AddJwtBearer(opt =>
-//{
-//    opt.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidateLifetime = true,
-//        ValidateIssuerSigningKey = true,
-//        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//        ValidAudience = builder.Configuration["Jwt:Audience"],
-//        IssuerSigningKey = new SymmetricSecurityKey(
-//            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-//    };
-
-//    // 🍪 Read JWT from cookies automatically
-//    opt.Events = new JwtBearerEvents
-//    {
-//        OnMessageReceived = context =>
-//        {
-//            if (context.Request.Cookies.ContainsKey("access_token"))
-//                context.Token = context.Request.Cookies["access_token"];
-
-//            return Task.CompletedTask;
-//        }
-//    };
-//});
-
-//builder.Services.AddAuthorization();
-
-//var app = builder.Build();
-
-//// Swagger UI
-//app.UseSwagger();
-//app.UseSwaggerUI(c =>
-//{
-//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sportex API v1");
-//});
-
-//app.UseHttpsRedirection();
-//app.UseAuthentication();
-//app.UseAuthorization();
-
-//app.MapControllers();
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<SportexDbContext>();
-//    AdminSeeder.SeedAdmin(context);
-//}
-
-
-//app.Run();
-
-
-
-
-
-
-
-//using Microsoft.AspNetCore.Authentication.JwtBearer;
-//using Microsoft.IdentityModel.Tokens;
-//using Microsoft.OpenApi.Models;
-//using Sportex.Infrastructure;
-//using Sportex.Infrastructure.Data;
-//using sportex.Infrastructure.Services;   // 👈 ADDED
-//using System.Text;
-
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Controllers
-//builder.Services.AddControllers();
-//builder.Services.AddEndpointsApiExplorer();
-
-//// Swagger + JWT Authorize Button
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new OpenApiInfo
-//    {
-//        Title = "Sportex API",
-//        Version = "v1",
-//        Description = "Sportex Ecommerce Backend"
-//    });
-
-//    // 🔐 JWT Authorize Button
-//    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-//    {
-//        Description = "Enter ONLY your access token (no 'Bearer ' word)",
-//        Name = "Authorization",
-//        In = ParameterLocation.Header,
-//        Type = SecuritySchemeType.Http,
-//        Scheme = "bearer",
-//        BearerFormat = "JWT"
-//    });
-
-//    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-//    {
-//        {
-//            new OpenApiSecurityScheme
-//            {
-//                Reference = new OpenApiReference
-//                {
-//                    Type = ReferenceType.SecurityScheme,
-//                    Id = "Bearer"
-//                }
-//            },
-//            Array.Empty<string>()
-//        }
-//    });
-//});
-
-//// Clean Architecture DI
-//builder.Services.AddInfrastructure(builder.Configuration);
-
-//// JWT + COOKIE SUPPORT
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//.AddJwtBearer(opt =>
-//{
-//    opt.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidateLifetime = true,
-//        ValidateIssuerSigningKey = true,
-//        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//        ValidAudience = builder.Configuration["Jwt:Audience"],
-//        IssuerSigningKey = new SymmetricSecurityKey(
-//            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-//        ClockSkew = TimeSpan.Zero   // 👈 ADDED
-//    };
-
-//    // 🍪 Read JWT from cookies automatically
-//    opt.Events = new JwtBearerEvents
-//    {
-//        OnMessageReceived = context =>
-//        {
-//            if (context.Request.Cookies.ContainsKey("access_token"))
-//                context.Token = context.Request.Cookies["access_token"];
-
-//            return Task.CompletedTask;
-//        }
-//    };
-//});
-
-//builder.Services.AddAuthorization();
-//builder.Services.AddHttpContextAccessor();          // 👈 ADDED
-//builder.Services.AddScoped<JwtTokenService>();     // 👈 ADDED
-
-//var app = builder.Build();
-
-//// Swagger UI
-//app.UseSwagger();
-//app.UseSwaggerUI(c =>
-//{
-//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sportex API v1");
-//});
-
-//app.UseHttpsRedirection();
-//app.UseAuthentication();
-//app.UseAuthorization();
-
-//app.MapControllers();
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<SportexDbContext>();
-//    AdminSeeder.SeedAdmin(context);
-//}
-
-//app.Run();
-
-
-
-
-
-
-
-
-
-
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using sportex.Infrastructure.Services;
 using Sportex.Infrastructure;
 using Sportex.Infrastructure.Data;
-using sportex.Infrastructure.Services;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers
+// 1. SERVICES CONFIGURATION
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger + JWT Authorize Button
+// 🔥 CORS CONFIGURATION - Setup for single origin
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+               
+            "http://localhost:5173",
+            "https://localhost:5173",
+            "https://api.razorpay.com"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
+
+
+// SWAGGER CONFIGURATION
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -264,7 +41,6 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Sportex Ecommerce Backend"
     });
 
-    // 🔐 JWT Authorize Button
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Enter ONLY your access token (no 'Bearer ' word)",
@@ -291,13 +67,36 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Clean Architecture DI
+
+
+
+
+// Dependency Injection & Auth Services
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// JWT + COOKIE SUPPORT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(opt =>
 {
+    //opt.TokenValidationParameters = new TokenValidationParameters
+    //{
+    //    ValidateIssuer = true,
+    //    ValidateAudience = true,
+    //    ValidateLifetime = true,
+    //    ValidateIssuerSigningKey = true,
+    //    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+    //    ValidAudience = builder.Configuration["Jwt:Audience"],
+    //    IssuerSigningKey = new SymmetricSecurityKey(
+    //        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+    //    ClockSkew = TimeSpan.Zero,
+
+    //    // 🔥🔥 THIS LINE FIXES EVERYTHING
+    //    RoleClaimType = ClaimTypes.Role
+    //};
+
+
+
+
+
     opt.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -307,44 +106,61 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-        ClockSkew = TimeSpan.Zero
+        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+        ClockSkew = TimeSpan.Zero,
+
+        // 🔥 FIX ROLE & USER ID MAPPING
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
     };
 
-    // 🍪 Read JWT from cookies automatically
+
     opt.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            if (context.Request.Cookies.ContainsKey("access_token"))
-                context.Token = context.Request.Cookies["access_token"];
-
+            var token = context.Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
             return Task.CompletedTask;
         }
     };
 });
 
+
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<CloudinaryService>();
 
 var app = builder.Build();
 
-// Swagger UI
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+// 2. MIDDLEWARE PIPELINE (The Order is critical here)
+
+// Fixes the 404 error
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sportex API v1");
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sportex API v1");
+    });
+}
 
 app.UseHttpsRedirection();
+
+// 🔥 CORS MUST come before Authentication/Authorization
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseMiddleware<TokenRefreshMiddleware>();
-
 app.UseAuthorization();
 
 app.MapControllers();
 
+// 3. DATABASE SEEDING
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<SportexDbContext>();
@@ -352,4 +168,3 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
-
