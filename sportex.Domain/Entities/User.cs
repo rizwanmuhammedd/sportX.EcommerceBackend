@@ -18,4 +18,8 @@ public class User : BaseEntity
 
     public string? Otp { get; set; }
     public DateTime? OtpExpiry { get; set; }
+
+
+    public string? ProfileImageUrl { get; set; }
+
 }

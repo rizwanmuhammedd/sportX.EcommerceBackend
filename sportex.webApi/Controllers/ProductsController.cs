@@ -163,6 +163,7 @@ public class ProductsController : ControllerBase
 
     // ---------------- EXISTING ----------------
 
+    [Authorize(Roles = "Admin")]
 
     [HttpGet("GetAll")]
     public async Task<IActionResult> GetAll()
@@ -281,9 +282,21 @@ public class ProductsController : ControllerBase
     [HttpGet("User/GetAll")]
     public async Task<IActionResult> UserGetAll()
     {
-        var items = (await _repo.GetAllAsync()).Where(x => x.IsActive);
+        var items = (await _repo.GetAllAsync())
+            .Where(x => x.IsActive)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                StockQuantity = p.StockQuantity,
+                Category = p.Category.ToString(),
+                ImageUrl = p.ImageUrl
+            });
+
         return Ok(ApiResponse.Success("Active products", items));
     }
+
 
     // ---------------- SEARCH / FILTER / PAGED ----------------
 
@@ -326,10 +339,20 @@ public class ProductsController : ControllerBase
         var items = (await _repo.GetAllAsync())
             .Where(x => x.IsActive)
             .Skip((page - 1) * size)
-            .Take(size);
+            .Take(size)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                StockQuantity = p.StockQuantity,
+                Category = p.Category.ToString(),
+                ImageUrl = p.ImageUrl
+            });
 
         return Ok(ApiResponse.Success("Paged products", items));
     }
+
 
     [HttpGet("Filter_Sort")]
     public async Task<IActionResult> FilterSort(string? category, decimal? min, decimal? max, string? sort)
@@ -347,7 +370,17 @@ public class ProductsController : ControllerBase
         if (sort == "price_asc") items = items.OrderBy(x => x.Price);
         if (sort == "price_desc") items = items.OrderByDescending(x => x.Price);
 
-        return Ok(ApiResponse.Success("Filtered products", items));
+        var result = items.Select(p => new ProductDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Price = p.Price,
+            StockQuantity = p.StockQuantity,
+            Category = p.Category.ToString(),
+            ImageUrl = p.ImageUrl
+        });
+
+        return Ok(ApiResponse.Success("Filtered products", result));
     }
 
     [Authorize(Roles = "Admin")]

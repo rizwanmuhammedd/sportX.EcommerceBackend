@@ -29,4 +29,8 @@
 		<ProjectReference Include="..\sportex.Infrastructure\sportex.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\avatars\" />
+	</ItemGroup>
+
 </Project>

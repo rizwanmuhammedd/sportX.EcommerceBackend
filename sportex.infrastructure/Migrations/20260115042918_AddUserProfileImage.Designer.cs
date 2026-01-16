@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sportex.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using Sportex.Infrastructure.Data;
 namespace sportex.Infrastructure.Migrations
 {
     [DbContext(typeof(SportexDbContext))]
-    partial class SportexDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260115042918_AddUserProfileImage")]
+    partial class AddUserProfileImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -244,8 +247,6 @@ namespace sportex.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Orders");
                 });
 
@@ -434,17 +435,6 @@ namespace sportex.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Sportex.Domain.Entities.Order", b =>
-                {
-                    b.HasOne("Sportex.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Sportex.Domain.Entities.OrderItem", b =>

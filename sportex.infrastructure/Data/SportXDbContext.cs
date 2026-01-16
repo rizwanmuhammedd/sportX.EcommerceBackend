@@ -58,13 +58,36 @@ public class SportexDbContext : DbContext
         });
 
         // ---------------- ORDER ----------------
+        //modelBuilder.Entity<Order>(entity =>
+        //{
+        //    entity.HasKey(o => o.Id);
+        //    entity.Property(o => o.TotalAmount).HasPrecision(18, 2);
+        //    entity.Property(o => o.ShippingAddress).HasMaxLength(300);
+        //    entity.Property(o => o.Status).HasConversion<string>();
+        //});
+
+        //modelBuilder.Entity<OrderItem>(entity =>
+        //{
+        //    entity.HasKey(oi => oi.Id);
+        //    entity.Property(oi => oi.UnitPrice).HasPrecision(18, 2);
+        //});
+
+
+
         modelBuilder.Entity<Order>(entity =>
         {
             entity.HasKey(o => o.Id);
             entity.Property(o => o.TotalAmount).HasPrecision(18, 2);
             entity.Property(o => o.ShippingAddress).HasMaxLength(300);
             entity.Property(o => o.Status).HasConversion<string>();
+
+            // 🔥 CORRECT, EXPLICIT RELATIONSHIP (no UserId1)
+            entity.HasOne(o => o.User)        // use the navigation property
+                  .WithMany()                  // User can have many Orders
+                  .HasForeignKey(o => o.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
+
 
         modelBuilder.Entity<OrderItem>(entity =>
         {

@@ -73,7 +73,8 @@ public class AuthService : IAuthService
             throw new Exception("Invalid email or password");
 
         if (user.isBlocked)
-            throw new Exception("Your account is blocked");
+            throw new Exception("Your account has been blocked by admin. Please contact support.");
+
 
         var accessToken = GenerateJwtToken(user);
         var refreshToken = GenerateRefreshToken();
@@ -111,7 +112,12 @@ public class AuthService : IAuthService
         return new TokenResponseDto
         {
             AccessToken = newAccess,
-            RefreshToken = newRefresh
+            RefreshToken = newRefresh,
+             Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role,
+            ProfileImageUrl = user.ProfileImageUrl
         };
     }
 

@@ -288,6 +288,7 @@
     using Sportex.Domain.Entities;
     using Sportex.Domain.Enums;
     using Sportex.Infrastructure.Data;
+using System.Linq;
 
     namespace Sportex.Infrastructure.Services;
 
@@ -468,32 +469,75 @@
             await _context.SaveChangesAsync();
         }
 
-        // ADMIN VIEW ALL
-        public async Task<List<OrderDto>> GetAllOrdersAsync()
-        {
-            return await _context.Orders
-                .Include(o => o.Items).ThenInclude(i => i.Product)
-                .Select(o => new OrderDto
-                {
-                    Id = o.Id,
-                    TotalAmount = o.TotalAmount,
-                    ShippingAddress = o.ShippingAddress,
-                    Status = o.Status.ToString(),
-                    IsPaid = o.IsPaid,
-                    OrderDate = o.OrderDate,
-                    Items = o.Items.Select(i => new OrderItemDto
-                    {
-                        ProductId = i.ProductId,
-                        ProductName = i.Product.Name,
-                        ImageUrl = i.Product.ImageUrl,
-                        Quantity = i.Quantity,
-                        UnitPrice = i.UnitPrice
-                    }).ToList()
-                }).ToListAsync();
-        }
+    // ADMIN VIEW ALL
+    //public async Task<List<OrderDto>> GetAllOrdersAsync()
+    //{
+    //    return await _context.Orders
+    //        .Include(o => o.Items).ThenInclude(i => i.Product)
+    //        .Select(o => new OrderDto
+    //        {
+    //            Id = o.Id,
+    //            TotalAmount = o.TotalAmount,
+    //            ShippingAddress = o.ShippingAddress,
+    //            Status = o.Status.ToString(),
+    //            IsPaid = o.IsPaid,
+    //            OrderDate = o.OrderDate,
+    //            Items = o.Items.Select(i => new OrderItemDto
+    //            {
+    //                ProductId = i.ProductId,
+    //                ProductName = i.Product.Name,
+    //                ImageUrl = i.Product.ImageUrl,
+    //                Quantity = i.Quantity,
+    //                UnitPrice = i.UnitPrice
+    //            }).ToList()
+    //        }).ToListAsync();
+    //}
 
-        // USER CANCEL ORDER
-        public async Task<OrderDto> CancelOrderAsync(int userId, int orderId)
+
+
+    public async Task<List<OrderDto>> GetAllOrdersAsync()
+    {
+        return await _context.Orders
+            .Include(o => o.Items).ThenInclude(i => i.Product)
+            .Include(o => o.User)
+            .Select(o => new OrderDto
+            {
+                Id = o.Id,
+                UserId = o.UserId,
+
+                // 🔥 NULL-SAFE (prevents 500)
+                UserName = o.User != null
+                    ? (o.User.Name ?? $"User {o.UserId}")
+                    : $"User {o.UserId}",
+
+                UserEmail = o.User != null
+                    ? o.User.Email
+                    : "No email",
+
+                TotalAmount = o.TotalAmount,
+                Status = o.Status.ToString(),
+                OrderDate = o.OrderDate,
+                IsPaid = o.IsPaid,
+
+                ShippingAddress = o.ShippingAddress,
+
+                Items = o.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    ImageUrl = i.Product.ImageUrl,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            })
+            .ToListAsync();
+    }
+
+
+
+
+    // USER CANCEL ORDER
+    public async Task<OrderDto> CancelOrderAsync(int userId, int orderId)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)

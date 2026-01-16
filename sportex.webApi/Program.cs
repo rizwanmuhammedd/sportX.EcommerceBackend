@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using sportex.Infrastructure.Services;
@@ -20,8 +21,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                
-            "http://localhost:5173",
-            "https://localhost:5173",
+            "http://localhost:5174",
+            "https://localhost:5174",
             "https://api.razorpay.com"
         )
         .AllowAnyHeader()
@@ -115,18 +116,47 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     };
 
 
+    //opt.Events = new JwtBearerEvents
+    //{
+    //    OnMessageReceived = context =>
+    //    {
+    //        var token = context.Request.Cookies["access_token"];
+    //        if (!string.IsNullOrEmpty(token))
+    //        {
+    //            context.Token = token;
+    //        }
+    //        return Task.CompletedTask;
+    //    }
+    //};
+
+
+
+
     opt.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            var token = context.Request.Cookies["access_token"];
-            if (!string.IsNullOrEmpty(token))
+            // 1) Try header first (Swagger / Postman / React)
+            var authHeader = context.Request.Headers["Authorization"]
+                .FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
             {
-                context.Token = token;
+                context.Token = authHeader.Substring("Bearer ".Length);
+                return Task.CompletedTask;
             }
+
+            // 2) Fallback to cookie (your existing behavior)
+            var cookieToken = context.Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(cookieToken))
+            {
+                context.Token = cookieToken;
+            }
+
             return Task.CompletedTask;
         }
     };
+    
 });
 
 
@@ -149,6 +179,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+
 app.UseHttpsRedirection();
 
 // 🔥 CORS MUST come before Authentication/Authorization
@@ -157,6 +188,12 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseMiddleware<TokenRefreshMiddleware>();
 app.UseAuthorization();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "avatars")),
+    RequestPath = "/avatars"
+});
 
 app.MapControllers();
 

@@ -22,7 +22,12 @@ namespace sportex.Infrastructure.Services
             {
                 new Claim("uid", user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Name)
+                new Claim(ClaimTypes.Name, user.Name),
+
+
+
+                        new Claim(ClaimTypes.Role, user.Role)
+
             };
 
             var key = new SymmetricSecurityKey(

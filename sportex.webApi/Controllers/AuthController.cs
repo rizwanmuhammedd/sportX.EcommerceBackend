@@ -54,18 +54,23 @@ public class AuthController : ControllerBase
                 .SelectMany(v => v.Errors)
                 .First().ErrorMessage));
 
-        var tokens = await _service.LoginAsync(dto);
-        SetTokenCookies(tokens);
-
-        return Ok(ApiResponse.Success("Login successful", new
+        try
         {
-            accessToken = tokens.AccessToken,
-            refreshToken = tokens.RefreshToken
-        }));
+            var tokens = await _service.LoginAsync(dto);
+            SetTokenCookies(tokens);
+
+            return Ok(ApiResponse.Success("Login successful", new
+            {
+                accessToken = tokens.AccessToken,
+                refreshToken = tokens.RefreshToken
+            }));
+        }
+        catch (Exception ex)
+        {
+            // ✅ IMPORTANT — return 400 instead of 500
+            return BadRequest(ApiResponse.Fail(400, ex.Message));
+        }
     }
-
-
-
 
 
     // REFRESH TOKEN
@@ -167,21 +172,20 @@ public class AuthController : ControllerBase
         await _service.ChangePasswordAsync(userId, dto);
         return Ok(ApiResponse.Success("Password changed successfully"));
     }
-
     [Authorize]
     [HttpPost("upload-avatar")]
-    public async Task<IActionResult> UploadAvatar(IFormFile file)
+    public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarDto dto)
     {
         int userId = int.Parse(User.FindFirst("uid")!.Value);
 
-        if (file == null || file.Length == 0)
-            return BadRequest("No file");
+        if (dto.Image == null || dto.Image.Length == 0)
+            return BadRequest("No image uploaded");
 
-        var fileName = $"{userId}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var fileName = $"{userId}_{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
         var path = Path.Combine("wwwroot/avatars", fileName);
 
         using var stream = new FileStream(path, FileMode.Create);
-        await file.CopyToAsync(stream);
+        await dto.Image.CopyToAsync(stream);
 
         var url = $"{Request.Scheme}://{Request.Host}/avatars/{fileName}";
 
@@ -189,6 +193,8 @@ public class AuthController : ControllerBase
 
         return Ok(ApiResponse.Success(url));
     }
+
+
 
 
 

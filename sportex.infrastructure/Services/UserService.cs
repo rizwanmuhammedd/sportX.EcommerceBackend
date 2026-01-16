@@ -111,7 +111,9 @@ public class UserService : IUserService
         {
             Id = user.Id,
             Name = user.Name,
-            Email = user.Email
+            Email = user.Email,
+                ProfileImageUrl = user.ProfileImageUrl     
+
         };
     }
 
@@ -174,11 +176,18 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAvatarAsync(int userId, string url)
+    public async Task UpdateAvatarAsync(int userId, string imageUrl)
     {
-        var user = await _context.Users.FindAsync(userId);
-        user.ProfileImageUrl = url;
+        var user = await _context.Users.FindAsync(userId)
+            ?? throw new Exception("User not found");
+
+        user.ProfileImageUrl = imageUrl;
         await _context.SaveChangesAsync();
     }
+
+
+
+
+
 
 }
