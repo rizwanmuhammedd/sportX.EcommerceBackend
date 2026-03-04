@@ -1,0 +1,626 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+
+<style>
+    :root {
+        --bg: #0c0c0e;
+        --surface: #111115;
+        --surface-2: #18181e;
+        --border: rgba(255,255,255,0.07);
+        --text: #e8e4dc;
+        --text-muted: rgba(232,228,220,0.38);
+        --accent: #c8a97e;
+        --accent-dim: rgba(200,169,126,0.06);
+        --radius: 3px;
+        --error: #e08080;
+        --error-bg: rgba(160,80,80,0.12);
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Jost', sans-serif;
+        font-weight: 300;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    .scene {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr 480px 1fr;
+        align-items: stretch;
+    }
+
+    .scene-left {
+        grid-column: 1;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 48px 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .scene-left::before {
+            content: "";
+            position: absolute;
+            top: -80px;
+            left: -80px;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(200,169,126,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .scene-left::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+            opacity: 0.3;
+        }
+
+    .brand-mark {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 13px;
+        font-weight: 300;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+        .brand-mark span {
+            color: var(--accent);
+        }
+
+    .left-quote {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 28px;
+        font-weight: 300;
+        font-style: italic;
+        line-height: 1.5;
+        color: rgba(232,228,220,0.22);
+        max-width: 240px;
+    }
+
+        .left-quote em {
+            font-style: normal;
+            color: rgba(200,169,126,0.5);
+        }
+
+    .left-bottom {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        opacity: 0.5;
+    }
+
+    .scene-right {
+        grid-column: 3;
+        background: var(--surface);
+        border-left: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .scene-right::before {
+            content: "";
+            position: absolute;
+            bottom: -60px;
+            right: -60px;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(200,169,126,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+    .right-pattern {
+        width: 120px;
+        height: 120px;
+        opacity: 0.06;
+        border: 1px solid var(--accent);
+        transform: rotate(45deg);
+        position: relative;
+    }
+
+        .right-pattern::before {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border: 1px solid var(--accent);
+        }
+
+        .right-pattern::after {
+            content: "";
+            position: absolute;
+            inset: 24px;
+            border: 1px solid var(--accent);
+        }
+
+    .auth-col {
+        grid-column: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 60px 48px;
+        position: relative;
+        background: var(--bg);
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+    }
+
+        .auth-col::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 48px;
+            right: 48px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.4;
+        }
+
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 36px;
+    }
+
+    .step-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--border);
+    }
+
+        .step-dot.active {
+            background: var(--accent);
+        }
+
+    .step-label {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-left: 4px;
+    }
+
+    .auth-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-weight: 300;
+        font-size: 48px;
+        line-height: 1;
+        margin-bottom: 6px;
+        color: var(--text);
+    }
+
+        .auth-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .auth-sub {
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        margin-bottom: 40px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .error-msg {
+        background: var(--error-bg);
+        border: 1px solid rgba(160,80,80,0.25);
+        color: var(--error);
+        padding: 12px 16px;
+        border-radius: var(--radius);
+        font-size: 11px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+        letter-spacing: 0.03em;
+    }
+
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 9px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 12px 16px;
+        font-family: 'Jost', sans-serif;
+        font-size: 13px;
+        font-weight: 300;
+        border-radius: var(--radius);
+        outline: none;
+        transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.5;
+    }
+
+    input:focus {
+        border-color: rgba(200,169,126,0.4);
+        background: var(--surface);
+        box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .avatar-zone {
+        border: 1px dashed rgba(255,255,255,0.12);
+        border-radius: var(--radius);
+        padding: 24px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s;
+        position: relative;
+        background: var(--surface-2);
+        overflow: hidden;
+    }
+
+        .avatar-zone:hover {
+            border-color: rgba(200,169,126,0.35);
+            background: var(--surface);
+        }
+
+            .avatar-zone:hover .avatar-icon-ring {
+                border-color: rgba(200,169,126,0.4);
+            }
+
+            .avatar-zone:hover .avatar-plus {
+                color: var(--accent);
+            }
+
+    #profileFile {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .avatar-icon-ring {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        transition: border-color 0.25s;
+        background: var(--bg);
+    }
+
+    .avatar-plus {
+        font-size: 20px;
+        color: var(--text-muted);
+        line-height: 1;
+        transition: color 0.25s;
+        font-weight: 200;
+    }
+
+    #avatarPreview {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 10px;
+        display: none;
+        border: 1px solid rgba(200,169,126,0.4);
+        box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .avatar-text {
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+    }
+
+    .pass-bar-wrap {
+        height: 2px;
+        background: var(--border);
+        border-radius: 1px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .pass-bar {
+        height: 100%;
+        width: 0%;
+        border-radius: 1px;
+        transition: width 0.35s ease, background 0.35s ease;
+        background: var(--border);
+    }
+
+    .field-hint {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 6px;
+        opacity: 0.5;
+        letter-spacing: 0.05em;
+    }
+
+    .btn-submit {
+        width: 100%;
+        margin-top: 12px;
+        padding: 14px 24px;
+        background: var(--accent);
+        color: #0c0c0e;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Jost', sans-serif;
+        font-size: 11px;
+        font-weight: 400;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: opacity 0.25s, transform 0.15s;
+    }
+
+        .btn-submit:hover {
+            opacity: 0.88;
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 28px 0 0;
+    }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .auth-divider span {
+            font-size: 9px;
+            color: var(--text-muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+    .auth-footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+    }
+
+        .auth-footer a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+            .auth-footer a:hover {
+                opacity: 0.7;
+            }
+
+    @@media (max-width: 900px) {
+        .scene {
+            grid-template-columns: 0 1fr 0;
+        }
+
+        .scene-left, .scene-right {
+            display: none;
+        }
+
+        .auth-col {
+            border: none;
+            padding: 48px 28px;
+        }
+    }
+
+    .auth-col > * {
+        opacity: 0;
+        transform: translateY(12px);
+        animation: fadeUp 0.5s ease forwards;
+    }
+
+        .auth-col > *:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .auth-col > *:nth-child(2) {
+            animation-delay: 0.10s;
+        }
+
+        .auth-col > *:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .auth-col > *:nth-child(4) {
+            animation-delay: 0.20s;
+        }
+
+        .auth-col > *:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .auth-col > *:nth-child(6) {
+            animation-delay: 0.30s;
+        }
+
+    @@keyframes fadeUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="scene">
+
+    <div class="scene-left">
+        <div class="brand-mark">The <span>Gallery</span></div>
+        <div class="left-quote">
+            "Art is not what you see, but what you make <em>others see</em>."
+        </div>
+        <div class="left-bottom">Est. 2024 &nbsp;&bull;&nbsp; Curated Collection</div>
+    </div>
+
+    <div class="auth-col">
+
+        <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <span class="step-label">New Account</span>
+        </div>
+
+        <h1 class="auth-title">Create <em>Account</em></h1>
+        <p class="auth-sub">Join the gallery</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="error-msg">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form method="post" action="/Account/Register" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label>Profile Picture <span style="opacity:0.4">— Optional</span></label>
+                <div class="avatar-zone" id="avatarZone">
+                    <input type="file" name="ProfilePicture" id="profileFile" accept="image/*" />
+                    <img id="avatarPreview" alt="Preview" />
+                    <div id="avatarContent">
+                        <div class="avatar-icon-ring">
+                            <span class="avatar-plus">+</span>
+                        </div>
+                        <div class="avatar-text">Upload photo</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="text" name="Email" placeholder="you@example.com" autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="Password" id="passInput" placeholder="Minimum 6 characters" autocomplete="new-password" />
+                <div class="pass-bar-wrap">
+                    <div class="pass-bar" id="passBar"></div>
+                </div>
+                <div class="field-hint">At least one number required</div>
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" name="ConfirmPassword" placeholder="Repeat password" autocomplete="new-password" />
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Create Account
+            </button>
+
+        </form>
+
+        <div class="auth-divider"><span>or</span></div>
+
+        <div class="auth-footer">
+            Already have an account?&nbsp;
+            <a href="/Account/Login">Sign in</a>
+        </div>
+
+    </div>
+
+    <div class="scene-right">
+        <div class="right-pattern"></div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var profileFile   = document.getElementById('profileFile');
+            var avatarPreview = document.getElementById('avatarPreview');
+            var avatarContent = document.getElementById('avatarContent');
+            var passInput     = document.getElementById('passInput');
+            var passBar       = document.getElementById('passBar');
+
+            profileFile.addEventListener('change', function () {
+                var file = profileFile.files[0];
+                if (!file) { return; }
+                var reader = new FileReader();
+                reader.onload = function (ev) {
+                    avatarPreview.src           = ev.target.result;
+                    avatarPreview.style.display = 'block';
+                    avatarContent.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            passInput.addEventListener('input', function () {
+                var val   = passInput.value;
+                var score = 0;
+                if (val.length >= 6)    { score++; }
+                if (val.length >= 10)   { score++; }
+                if (/[0-9]/.test(val))  { score++; }
+                if (/[A-Z]/.test(val))  { score++; }
+                var colors = ['#1e1e24', '#a05050', '#c87040', '#c8a97e', '#8ab88a'];
+                var widths  = ['0%', '25%', '50%', '75%', '100%'];
+                passBar.style.background = colors[score];
+                passBar.style.width      = widths[score];
+            });
+        }());
+    </script>
+}

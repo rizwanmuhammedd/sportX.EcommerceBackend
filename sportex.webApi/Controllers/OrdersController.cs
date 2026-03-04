@@ -52,14 +52,37 @@ public class OrderController : ControllerBase
     }
 
     // USER GET ORDER BY ID
-    [Authorize(Roles = "user")]
+    //[Authorize(Roles = "user")]
+    //[HttpGet("{id}")]
+    //public async Task<IActionResult> GetBy(int id)
+    //{
+    //    var order = await _service.GetOrderByIdAsync(UserId, id);
+    //    if (order == null) return NotFound(ApiResponse.Fail(404, "Order not found"));
+    //    return Ok(ApiResponse.Success("Order details", order));
+    //}
+    // USER GET ORDER BY ID (ALLOW PAYMENT SUCCESS PAGE)
+    [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBy(int id)
     {
-        var order = await _service.GetOrderByIdAsync(UserId, id);
-        if (order == null) return NotFound(ApiResponse.Fail(404, "Order not found"));
+        // If user is logged in, use their id
+        int? userId = null;
+
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var uidClaim = User.FindFirst("uid");
+            if (uidClaim != null)
+                userId = int.Parse(uidClaim.Value);
+        }
+
+        var order = await _service.GetOrderByIdForPaymentAsync(userId, id);
+
+        if (order == null)
+            return NotFound(ApiResponse.Fail(404, "Order not found"));
+
         return Ok(ApiResponse.Success("Order details", order));
     }
+
 
     // USER PAY
     [Authorize(Roles = "user")]
@@ -96,11 +119,15 @@ public class OrderController : ControllerBase
     // UPDATE ORDER STATUS
     [Authorize(Roles = "Admin")]
     [HttpPatch("admin/status/{orderId}")]
-    public async Task<IActionResult> UpdateStatus(int orderId, OrderStatus status)
+    public async Task<IActionResult> UpdateStatus(
+      int orderId,
+      [FromBody] UpdateOrderStatusDto dto
+  )
     {
-        await _service.UpdateOrderStatusAsync(orderId, status);
+        await _service.UpdateOrderStatusAsync(orderId, dto.Status);
         return Ok(ApiResponse.Success("Order status updated"));
     }
+
 
     // GET ORDERS BY STATUS
     [Authorize(Roles = "Admin")]

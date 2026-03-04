@@ -13,6 +13,8 @@ public interface IOrderService
 
     Task PayAsync(int userId, int orderId);
     Task ToggleStatusAsync(int orderId);
+    Task<OrderDto?> GetOrderByIdForPaymentAsync(int? userId, int orderId);
+
 
     Task<List<OrderDto>> GetAllOrdersAsync();
     Task<OrderDto> CancelOrderAsync(int userId, int orderId);

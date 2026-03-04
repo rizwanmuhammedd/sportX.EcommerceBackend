@@ -6,20 +6,24 @@ public static class AdminSeeder
 {
     public static void SeedAdmin(SportexDbContext context)
     {
-        if (!context.Users.Any(u => u.Role == "Admin"))
+        // Check if we can connect at all before running logic
+        if (context.Database.CanConnect())
         {
-            var admin = new User
+            if (!context.Users.Any(u => u.Role == "Admin"))
             {
-                Name = "Super Admin",
-                Email = "risvan@sportx.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Risvan@123"),
-                Role = "Admin",
-                isBlocked = false,
-                CreatedOn = DateTime.UtcNow
-            };
+                var admin = new User
+                {
+                    Name = "Super Admin",
+                    Email = "risvan@sportx.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Risvan@123"),
+                    Role = "Admin",
+                    isBlocked = false,
+                    CreatedOn = DateTime.UtcNow
+                };
 
-            context.Users.Add(admin);
-            context.SaveChanges();
+                context.Users.Add(admin);
+                context.SaveChanges();
+            }
         }
     }
 }

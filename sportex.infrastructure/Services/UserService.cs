@@ -1,70 +1,8 @@
-﻿//using Microsoft.EntityFrameworkCore;
-//using Sportex.Application.DTOs.Users;
-//using Sportex.Application.Interfaces;
-//using Sportex.Infrastructure.Data;
-
-//namespace Sportex.Infrastructure.Services;
-
-//public class UserService : IUserService
-//{
-//    private readonly SportexDbContext _context;
-//    public UserService(SportexDbContext context) => _context = context;
-
-//    public async Task<List<UserDto>> GetAllUsersAsync()
-//    {
-//        return await _context.Users.Select(u => new UserDto
-//        {
-//            Id = u.Id,
-//            Name = u.Name,
-//            Email = u.Email,
-//            Role = u.Role,
-//            IsBlocked = u.isBlocked
-//        }).ToListAsync();
-//    }
-
-//    public async Task ToggleBlockAsync(int userId)
-//    {
-//        var user = await _context.Users.FindAsync(userId);
-//        if (user == null) throw new Exception("User not found");
-
-//        user.isBlocked = !user.isBlocked;
-//        await _context.SaveChangesAsync();
-//    }
-
-//    // ---------------- PROFILE ----------------
-//    public async Task<UserProfileDto> GetProfileAsync(int userId)
-//    {
-//        var user = await _context.Users.FindAsync(userId)
-//            ?? throw new Exception("User not found");
-
-//        return new UserProfileDto
-//        {
-//            Id = user.Id,
-//            Name = user.Name,
-//            Email = user.Email
-//        };
-//    }
-
-//    public async Task UpdateProfileAsync(int userId, UpdateProfileDto dto)
-//    {
-//        var user = await _context.Users.FindAsync(userId);
-//        if (user == null) throw new Exception("User not found");
-
-//        user.Name = dto.Name.Trim();
-//        user.Email = dto.Email.Trim().ToLower();
-
-//        await _context.SaveChangesAsync();
-//    }
-//}
+﻿
 
 
 
-
-
-
-
-
-
+using CloudinaryDotNet.Core;
 using Microsoft.EntityFrameworkCore;
 using Sportex.Application.DTOs.Auth;
 using Sportex.Application.DTOs.Users;
@@ -94,12 +32,28 @@ public class UserService : IUserService
 
     public async Task ToggleBlockAsync(int userId)
     {
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null) throw new Exception("User not found");
+        var user = await _context.Users.FindAsync(userId)
+            ?? throw new Exception("User not found");
+
+        // 🚫 NEVER BLOCK ADMINS
+        if (user.Role == nameof(UserRole.Admin))
+            throw new Exception("Admin accounts cannot be blocked");
+
+        // If admin is trying to BLOCK a customer
+        if (!user.isBlocked)
+        {
+            bool hasOrders = await _context.Orders
+                .AnyAsync(o => o.UserId == userId);
+
+            if (hasOrders)
+                throw new Exception("Cannot block a customer who has placed orders");
+        }
 
         user.isBlocked = !user.isBlocked;
         await _context.SaveChangesAsync();
     }
+
+
 
     // ---------------- PROFILE ----------------
     public async Task<UserProfileDto> GetProfileAsync(int userId)
@@ -112,17 +66,25 @@ public class UserService : IUserService
             Id = user.Id,
             Name = user.Name,
             Email = user.Email,
-                ProfileImageUrl = user.ProfileImageUrl     
-
+            Phone = user.Phone,
+            Bio = user.Bio,
+            AvatarUrl = user.ProfileImageUrl
         };
     }
 
+
     public async Task UpdateProfileAsync(int userId, UpdateProfileDto dto)
     {
-        var user = await _context.Users.FindAsync(userId);
-        user!.Name = dto.Name.Trim();
+        var user = await _context.Users.FindAsync(userId)
+            ?? throw new Exception("User not found");
+
+        user.Name = dto.Name.Trim();
+        user.Phone = dto.Phone;
+        user.Bio = dto.Bio;
+
         await _context.SaveChangesAsync();
     }
+
 
     // ---------------- ADMIN CONTROLS ----------------
 
@@ -142,21 +104,33 @@ public class UserService : IUserService
 
     public async Task BlockUserAsync(int userId)
     {
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null) throw new Exception("User not found");
+        var user = await _context.Users.FindAsync(userId)
+            ?? throw new Exception("User not found");
+
+        // 🚫 NEVER BLOCK ADMINS
+        if (user.Role == nameof(UserRole.Admin))
+            throw new Exception("Admin accounts cannot be blocked");
+
+        bool hasOrders = await _context.Orders
+            .AnyAsync(o => o.UserId == userId);
+
+        if (hasOrders)
+            throw new Exception("Cannot block a customer who has placed orders");
 
         user.isBlocked = true;
         await _context.SaveChangesAsync();
     }
 
+
     public async Task UnblockUserAsync(int userId)
     {
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null) throw new Exception("User not found");
+        var user = await _context.Users.FindAsync(userId)
+            ?? throw new Exception("User not found");
 
         user.isBlocked = false;
         await _context.SaveChangesAsync();
     }
+
 
     public async Task DeleteUserAsync(int userId)
     {
@@ -185,9 +159,13 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
     }
 
+    private async Task<bool> UserHasOrdersAsync(int userId)
+    {
+        return await _context.Orders
+            .AnyAsync(o => o.UserId == userId);
+    }
 
-
-
+   
 
 
 }

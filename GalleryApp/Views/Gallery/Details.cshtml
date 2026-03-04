@@ -1,0 +1,313 @@
+﻿@model GalleryApp.Models.Photo
+@{
+    ViewData["Title"] = Model.Title ?? "Photo Details";
+    var related = ViewBag.Related as List<GalleryApp.Models.Photo> ?? new List<GalleryApp.Models.Photo>();
+    var isOwner = (bool)(ViewBag.IsOwner ?? false);
+}
+<style>
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 32px;
+        transition: color 0.2s;
+    }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+    .details-layout {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 40px;
+        align-items: start;
+    }
+
+    .details-img-wrap {
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+
+    .details-img {
+        width: 100%;
+        display: block;
+        max-height: 80vh;
+        object-fit: cover;
+    }
+
+    .info-panel {
+        position: sticky;
+        top: 88px;
+    }
+
+    .photo-cat {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 10px;
+    }
+
+    .details-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 38px;
+        font-weight: 300;
+        line-height: 1.1;
+        margin-bottom: 12px;
+    }
+
+    .uploader-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        padding: 10px 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .uploader-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: var(--accent);
+        font-family: 'Cormorant Garamond', serif;
+        flex-shrink: 0;
+    }
+
+    .uploader-name {
+        font-size: 12px;
+        color: var(--text);
+    }
+
+    .uploader-label {
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .owner-badge {
+        margin-left: auto;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        padding: 3px 8px;
+        border-radius: 1px;
+    }
+
+    .details-desc {
+        color: var(--text-muted);
+        font-size: 13px;
+        line-height: 1.7;
+        margin-bottom: 28px;
+    }
+
+    .meta-grid {
+        border-top: 1px solid var(--border);
+        padding-top: 20px;
+        margin-bottom: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .meta-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .meta-label {
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .meta-value {
+        font-size: 12px;
+        color: var(--text);
+    }
+
+        .meta-value.accent {
+            color: var(--accent);
+        }
+
+    .detail-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .detail-actions .btn {
+            justify-content: center;
+        }
+
+    .related-section {
+        margin-top: 56px;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+    }
+
+    .related-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 28px;
+        font-weight: 300;
+        margin-bottom: 24px;
+    }
+
+        .related-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 12px;
+    }
+
+    .related-card {
+        border-radius: var(--radius);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        text-decoration: none;
+        display: block;
+    }
+
+        .related-card img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+            filter: grayscale(15%);
+        }
+
+        .related-card:hover img {
+            transform: scale(1.05);
+            filter: grayscale(0%);
+        }
+
+    .related-card-info {
+        padding: 10px 12px;
+    }
+
+    .related-card-title {
+        font-size: 11px;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .related-card-uploader {
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+</style>
+
+<a class="back-link" href="/Gallery/Index">← Back to Gallery</a>
+
+<div class="details-layout">
+    <div class="details-img-wrap">
+        <img class="details-img" src="@Model.ImagePath" alt="@Model.Title" />
+    </div>
+
+    <div class="info-panel">
+        <div class="photo-cat">@(string.IsNullOrEmpty(Model.Category) ? "Uncategorized" : Model.Category)</div>
+        <h1 class="details-title">@(string.IsNullOrEmpty(Model.Title) ? "Untitled" : Model.Title)</h1>
+
+        <div class="uploader-row">
+            <div class="uploader-avatar">
+                @(string.IsNullOrEmpty(Model.UploaderEmail) ? "?" : Model.UploaderEmail[0].ToString().ToUpper())
+            </div>
+            <div>
+                <div class="uploader-name">@(string.IsNullOrEmpty(Model.UploaderEmail) ? "Anonymous" : Model.UploaderEmail.Split('@')[0])</div>
+                <div class="uploader-label">Uploaded by</div>
+            </div>
+            @if (isOwner)
+            {
+                <span class="owner-badge">Your Photo</span>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <p class="details-desc">@Model.Description</p>
+        }
+        else
+        {
+            <p class="details-desc" style="opacity:0.35;font-style:italic;">No description provided.</p>
+        }
+
+        <div class="meta-grid">
+            <div class="meta-row">
+                <span class="meta-label">Uploaded</span>
+                <span class="meta-value">@Model.CreatedDate.ToString("dd MMMM yyyy")</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Time</span>
+                <span class="meta-value">@Model.CreatedDate.ToString("HH:mm")</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Views</span>
+                <span class="meta-value accent">@Model.ViewCount</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Category</span>
+                <span class="meta-value">@(string.IsNullOrEmpty(Model.Category) ? "—" : Model.Category)</span>
+            </div>
+        </div>
+
+        <div class="detail-actions">
+            <a href="@Model.ImagePath" download class="btn btn-primary">Download Photo</a>
+            @if (isOwner)
+            {
+                <a href="/Gallery/Edit/@Model.Id" class="btn">Edit Photo</a>
+                <a href="/Gallery/Delete/@Model.Id" class="btn btn-danger"
+                   onclick="return confirm('Delete your photo permanently?')">Delete Photo</a>
+            }
+            <a href="/Gallery/Index" class="btn">Back to Gallery</a>
+        </div>
+    </div>
+</div>
+
+@if (related.Count > 0)
+{
+    <div class="related-section">
+        <h2 class="related-title"><em>Related</em> Photos</h2>
+        <div class="related-grid">
+            @foreach (var r in related)
+            {
+                <a href="/Gallery/Details/@r.Id" class="related-card">
+                    <img src="@r.ImagePath" alt="@r.Title" loading="lazy" />
+                    <div class="related-card-info">
+                        <div class="related-card-title">@(string.IsNullOrEmpty(r.Title) ? "Untitled" : r.Title)</div>
+                        <div class="related-card-uploader">@(string.IsNullOrEmpty(r.UploaderEmail) ? "Anonymous" : r.UploaderEmail.Split('@')[0])</div>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+}

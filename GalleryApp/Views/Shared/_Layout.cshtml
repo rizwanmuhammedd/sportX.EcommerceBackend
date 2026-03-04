@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LUMINARY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --border: #222222;
+            --text: #e8e0d4;
+            --text-muted: #5a5550;
+            --accent: #c8a97e;
+            --accent-dim: rgba(200,169,126,0.12);
+            --danger: #a05050;
+            --radius: 2px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 300;
+            letter-spacing: 0.25em;
+            color: var(--text);
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+            .logo span {
+                color: var(--accent);
+            }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+            nav a {
+                color: var(--text-muted);
+                text-decoration: none;
+                letter-spacing: 0.12em;
+                font-size: 11px;
+                text-transform: uppercase;
+                transition: color 0.2s;
+            }
+
+                nav a:hover {
+                    color: var(--accent);
+                }
+
+        .nav-upload {
+            background: var(--accent) !important;
+            color: #0a0a0a !important;
+            padding: 8px 20px;
+            border-radius: var(--radius);
+        }
+
+            .nav-upload:hover {
+                opacity: 0.8;
+            }
+
+        .nav-username {
+            color: var(--text) !important;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+        }
+
+        main {
+            min-height: calc(100vh - 64px);
+            padding: 48px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: var(--radius);
+        }
+
+            .btn:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0a0a0a;
+        }
+
+            .btn-primary:hover {
+                opacity: 0.85;
+                color: #0a0a0a;
+            }
+
+        .btn-danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+            .btn-danger:hover {
+                background: var(--danger);
+                color: var(--text);
+            }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="search"], input[type="password"], textarea, select {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+            input[type="text"]:focus, input[type="search"]:focus,
+            input[type="password"]:focus, textarea:focus, select:focus {
+                border-color: var(--accent);
+            }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        select {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a class="logo" href="/Gallery/Index">LUM<span>I</span>NARY</a>
+        <nav>
+            <a href="/Gallery/Index">Gallery</a>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                string userName = User.Identity.Name ?? "";
+                string displayName = userName.Contains('@') ? userName.Split('@')[0] : userName;
+                <a href="/Account/Profile" class="nav-username">@displayName</a>
+                <a href="/Account/Logout">Logout</a>
+            }
+            else
+            {
+                <a href="/Account/Login">Login</a>
+                <a href="/Account/Register" class="nav-upload">Register</a>
+            }
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer>
+        <span>2026 LUMINARY - Photo Gallery</span>
+        <span>Built with ASP.NET MVC</span>
+    </footer>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

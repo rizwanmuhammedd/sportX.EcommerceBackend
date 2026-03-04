@@ -16,7 +16,7 @@ public interface IUserService
     Task DeleteUserAsync(int userId);
     Task ChangeRoleAsync(int userId, UserRole role);
     Task UpdateAvatarAsync(int userId, string imageUrl);
-
+ 
 
     // USER PROFILE
     Task<UserProfileDto> GetProfileAsync(int userId);

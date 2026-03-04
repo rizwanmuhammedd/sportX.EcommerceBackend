@@ -1,0 +1,248 @@
+﻿@model IEnumerable<GalleryApp.Models.Photo>
+@{
+    ViewData["Title"] = "Gallery";
+    var photoList   = Model.ToList();
+    var categories  = ViewBag.Categories as List<string> ?? new List<string>();
+    var currentUser = ViewBag.CurrentUser as string;
+}
+<style>
+    .page-hero { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+    .hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+    .gallery-title { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 300; line-height: 1; }
+    .gallery-title em { font-style: italic; color: var(--accent); }
+    .gallery-sub { margin-top: 8px; color: var(--text-muted); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+    .stats-row { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; width: fit-content; margin-bottom: 24px; }
+    .stat-box { padding: 16px 28px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+    .stat-box:last-child { border-right: none; }
+    .stat-val { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 300; color: var(--accent); line-height: 1; }
+    .stat-lbl { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+    .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .search-box { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+    .search-box input { background: none; border: none; padding: 9px 14px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; outline: none; width: 220px; }
+    .search-box button { background: none; border: none; border-left: 1px solid var(--border); padding: 9px 14px; color: var(--text-muted); cursor: pointer; font-size: 14px; transition: color 0.2s; }
+    .search-box button:hover { color: var(--accent); }
+    .filter-btn { padding: 9px 16px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent-dim); }
+    .sort-select { padding: 9px 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 11px; border-radius: var(--radius); outline: none; cursor: pointer; }
+    .results-bar { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 11px; letter-spacing: 0.08em; }
+    .gallery-grid { columns: 4; column-gap: 14px; }
+    @@media (max-width: 1200px) { .gallery-grid { columns: 3; } }
+    @@media (max-width: 768px)  { .gallery-grid { columns: 2; } }
+    @@media (max-width: 480px)  { .gallery-grid { columns: 1; } }
+    .photo-card { break-inside: avoid; margin-bottom: 14px; position: relative; border-radius: var(--radius); overflow: hidden; background: var(--surface); border: 1px solid var(--border); cursor: pointer; opacity: 0; animation: fadeUp 0.5s ease forwards; }
+    @@keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .photo-card:nth-child(1) { animation-delay: 0.04s; }
+    .photo-card:nth-child(2) { animation-delay: 0.08s; }
+    .photo-card:nth-child(3) { animation-delay: 0.12s; }
+    .photo-card:nth-child(4) { animation-delay: 0.16s; }
+    .photo-card:nth-child(5) { animation-delay: 0.20s; }
+    .photo-card:nth-child(6) { animation-delay: 0.24s; }
+    .photo-card:nth-child(7) { animation-delay: 0.28s; }
+    .photo-card:nth-child(8) { animation-delay: 0.32s; }
+    .photo-card img { width: 100%; display: block; transition: transform 0.6s ease; filter: grayscale(10%); }
+    .photo-card:hover img { transform: scale(1.05); filter: grayscale(0%); }
+    .photo-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);
+        opacity: 0; transition: opacity 0.3s;
+        display: flex; flex-direction: column; justify-content: flex-end; padding: 16px;
+    }
+    .photo-card:hover .photo-overlay { opacity: 1; }
+    .overlay-category { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+    .overlay-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: #fff; margin-bottom: 4px; line-height: 1.2; }
+    .overlay-uploader { font-size: 10px; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+    .uploader-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; flex-shrink: 0; }
+    .overlay-meta { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; margin-bottom: 10px; display: flex; gap: 10px; }
+    .overlay-actions { display: flex; gap: 6px; }
+    .act-btn { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); text-decoration: none; border-radius: 1px; transition: all 0.15s; backdrop-filter: blur(4px); }
+    .act-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .act-btn.del { border-color: rgba(180,80,80,0.5); color: rgba(255,150,150,0.9); }
+    .act-btn.del:hover { background: rgba(140,50,50,0.35); }
+    .badge-views { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); font-size: 9px; padding: 3px 8px; border-radius: 1px; letter-spacing: 0.08em; }
+    .badge-cat { position: absolute; top: 10px; left: 10px; background: var(--accent); color: #0a0a0a; font-size: 9px; padding: 3px 8px; border-radius: 1px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+    .badge-mine { position: absolute; top: 10px; left: 10px; background: rgba(80,160,80,0.85); color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 1px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .empty-state { text-align: center; padding: 100px 40px; }
+    .empty-icon { font-size: 56px; margin-bottom: 20px; opacity: 0.12; }
+    .empty-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 300; color: var(--text-muted); margin-bottom: 10px; }
+    .empty-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 28px; }
+    .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.97); z-index: 1000; align-items: center; justify-content: center; padding: 40px; }
+    .lightbox.open { display: flex; }
+    .lightbox-inner { max-width: 900px; max-height: 85vh; display: flex; flex-direction: column; align-items: center; }
+    .lightbox-img { max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius); }
+    .lightbox-info { margin-top: 16px; text-align: center; }
+    .lightbox-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--text); margin-bottom: 4px; }
+    .lightbox-uploader { font-size: 11px; color: var(--accent); letter-spacing: 0.08em; }
+    .lightbox-close { position: fixed; top: 24px; right: 32px; background: none; border: 1px solid var(--border); color: var(--text-muted); font-size: 16px; width: 38px; height: 38px; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+    .lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+
+<div class="page-hero">
+    <div class="hero-top">
+        <div>
+            <h1 class="gallery-title">Photo <em>Gallery</em></h1>
+            <p class="gallery-sub">Community collection — @photoList.Count photo@(photoList.Count == 1 ? "" : "s")</p>
+        </div>
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <a href="/Gallery/Upload" class="btn btn-primary" style="margin-top:8px">+ Upload Photo</a>
+        }
+        else
+        {
+            <a href="/Account/Login" class="btn btn-primary" style="margin-top:8px">Login to Upload</a>
+        }
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <span class="stat-val">@ViewBag.TotalPhotos</span>
+            <span class="stat-lbl">Total Photos</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val">@ViewBag.TotalViews</span>
+            <span class="stat-lbl">Total Views</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val">@ViewBag.TotalUploaders</span>
+            <span class="stat-lbl">Contributors</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val">@categories.Count</span>
+            <span class="stat-lbl">Categories</span>
+        </div>
+    </div>
+
+    <form method="get" action="/Gallery/Index" id="filterForm" style="margin-top:24px">
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="search" name="search" placeholder="Search photos or uploaders..."
+                       value="@ViewBag.Search" />
+                <button type="submit">&#x2315;</button>
+            </div>
+            <a href="/Gallery/Index" class="filter-btn @(ViewBag.Category == null && ViewBag.Search == null ? "active" : "")">All</a>
+            @foreach (var cat in categories)
+            {
+                <a href="/Gallery/Index?category=@cat&sort=@ViewBag.Sort"
+                   class="filter-btn @(ViewBag.Category == cat ? "active" : "")">@cat</a>
+            }
+            <select name="sort" class="sort-select" onchange="document.getElementById('filterForm').submit()">
+                <option value="newest" @(ViewBag.Sort == "newest" || ViewBag.Sort == null ? "selected" : "")>Newest First</option>
+                <option value="oldest" @(ViewBag.Sort == "oldest" ? "selected" : "")>Oldest First</option>
+                <option value="views"  @(ViewBag.Sort == "views"  ? "selected" : "")>Most Viewed</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="results-bar">
+    @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+    {
+        <span>Results for "@ViewBag.Search" — </span>
+    }
+    <span>@photoList.Count photo@(photoList.Count == 1 ? "" : "s") shown</span>
+</div>
+
+@if (photoList.Count > 0)
+{
+    <div class="gallery-grid">
+        @foreach (var photo in photoList)
+        {
+            var isOwner = currentUser != null && currentUser == photo.UserId;
+            var uploaderName = string.IsNullOrEmpty(photo.UploaderEmail)
+                ? "Anonymous"
+                : photo.UploaderEmail.Split(new char[]{'@'})[0];
+            <div class="photo-card">
+                <img src="@photo.ImagePath" alt="@photo.Title" loading="lazy"
+                     data-src="@photo.ImagePath"
+                     data-title="@photo.Title"
+                     data-uploader="@photo.UploaderEmail"
+                     onclick="openLightbox(this)" />
+
+                @if (isOwner)
+                {
+                    <div class="badge-mine">My Photo</div>
+                }
+                else if (!string.IsNullOrEmpty(photo.Category))
+                {
+                    <div class="badge-cat">@photo.Category</div>
+                }
+
+                <div class="badge-views">@photo.ViewCount views</div>
+
+                <div class="photo-overlay">
+                    <div class="overlay-category">@(string.IsNullOrEmpty(photo.Category) ? "Uncategorized" : photo.Category)</div>
+                    <div class="overlay-title">@(string.IsNullOrEmpty(photo.Title) ? "Untitled" : photo.Title)</div>
+                    <div class="overlay-uploader">
+                        <span class="uploader-dot"></span>
+                        @uploaderName
+                    </div>
+                    <div class="overlay-meta">
+                        <span>@photo.CreatedDate.ToString("dd MMM yyyy")</span>
+                        <span>@photo.ViewCount views</span>
+                    </div>
+                    <div class="overlay-actions">
+                        <a href="/Gallery/Details/@photo.Id" class="act-btn">View</a>
+                        @if (isOwner)
+                        {
+                            <a href="/Gallery/Edit/@photo.Id" class="act-btn">Edit</a>
+                            <a href="/Gallery/Delete/@photo.Id" class="act-btn del"
+                               onclick="return confirm('Delete your photo?')">Delete</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon">◈</div>
+        <h2 class="empty-title">No photos found</h2>
+        <p class="empty-sub">Try a different search or category</p>
+        <a href="/Gallery/Index" class="btn btn-primary">Clear Filters</a>
+    </div>
+}
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">X</button>
+    <div class="lightbox-inner" onclick="this.parentElement; event.stopPropagation();">
+        <img class="lightbox-img" id="lbImg" src="" alt="" />
+        <div class="lightbox-info">
+            <div class="lightbox-title" id="lbTitle"></div>
+            <div class="lightbox-uploader" id="lbUploader"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openLightbox(imgEl) {
+        var src      = imgEl.getAttribute('data-src');
+        var title    = imgEl.getAttribute('data-title');
+        var uploader = imgEl.getAttribute('data-uploader') || '';
+        var name     = uploader ? 'by ' + uploader.split('\u0040')[0] : '';
+        document.getElementById('lbImg').src               = src;
+        document.getElementById('lbTitle').textContent     = title || 'Untitled';
+        document.getElementById('lbUploader').textContent  = name;
+        document.getElementById('lightbox').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    document.getElementById('lightbox').addEventListener('click', function (ev) {
+        if (ev.target === this) { closeLightbox(); }
+    });
+    document.querySelector('.lightbox-inner').addEventListener('click', function (ev) {
+        ev.stopPropagation();
+    });
+    document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape') { closeLightbox(); }
+    });
+</script>
+}

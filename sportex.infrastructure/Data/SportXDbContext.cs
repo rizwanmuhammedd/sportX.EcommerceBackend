@@ -1,5 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+
+
+
+
+
+using Microsoft.EntityFrameworkCore;
 using Sportex.Domain.Entities;
+using Sportex.Infrastructure.Data; // For SportexDbContext
 
 namespace Sportex.Infrastructure.Data;
 
@@ -15,17 +22,19 @@ public class SportexDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Payment> Payments { get; set; }
+    public DbSet<ShippingAddress> ShippingAddresses { get; set; }
 
+    // NEW: Review entities
+    public DbSet<Review> Reviews { get; set; }
+    public DbSet<ReviewHelpful> ReviewHelpfuls { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-
         modelBuilder.Entity<Payment>()
-    .Property(x => x.Amount)
-    .HasPrecision(18, 2);   // ₹999,999,999,999,999.99 safe
-
+            .Property(x => x.Amount)
+            .HasPrecision(18, 2);
 
         // ---------------- PRODUCT ----------------
         modelBuilder.Entity<Product>(entity =>
@@ -36,9 +45,7 @@ public class SportexDbContext : DbContext
             entity.Property(p => p.StockQuantity).IsRequired();
             entity.Property(p => p.ImageUrl).HasMaxLength(500);
             entity.Property(p => p.Category).HasConversion<string>();
-
-            entity.Property(p => p.IsActive)          // 🔥 FIXED
-                  .HasDefaultValue(true);
+            entity.Property(p => p.IsActive).HasDefaultValue(true);
         });
 
         // ---------------- USER ----------------
@@ -49,43 +56,38 @@ public class SportexDbContext : DbContext
             entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
             entity.Property(u => u.PasswordHash).IsRequired();
             entity.Property(u => u.RefreshToken).HasMaxLength(500);
-            entity.Property(u => u.Role).HasMaxLength(20);   // Admin / User
-
-            entity.Property(u => u.Otp)              // 🔥 FIXED
-                  .HasMaxLength(10);
-
-            entity.Property(u => u.OtpExpiry);       // 🔥 FIXED
+            entity.Property(u => u.Role).HasMaxLength(20);
+            entity.Property(u => u.Otp).HasMaxLength(10);
+            entity.Property(u => u.OtpExpiry);
         });
 
         // ---------------- ORDER ----------------
-        //modelBuilder.Entity<Order>(entity =>
-        //{
-        //    entity.HasKey(o => o.Id);
-        //    entity.Property(o => o.TotalAmount).HasPrecision(18, 2);
-        //    entity.Property(o => o.ShippingAddress).HasMaxLength(300);
-        //    entity.Property(o => o.Status).HasConversion<string>();
-        //});
-
-        //modelBuilder.Entity<OrderItem>(entity =>
-        //{
-        //    entity.HasKey(oi => oi.Id);
-        //    entity.Property(oi => oi.UnitPrice).HasPrecision(18, 2);
-        //});
-
-
-
+        // ---------------- ORDER ----------------
         modelBuilder.Entity<Order>(entity =>
         {
             entity.HasKey(o => o.Id);
-            entity.Property(o => o.TotalAmount).HasPrecision(18, 2);
-            entity.Property(o => o.ShippingAddress).HasMaxLength(300);
-            entity.Property(o => o.Status).HasConversion<string>();
 
-            // 🔥 CORRECT, EXPLICIT RELATIONSHIP (no UserId1)
-            entity.HasOne(o => o.User)        // use the navigation property
-                  .WithMany()                  // User can have many Orders
+            entity.Property(o => o.TotalAmount)
+                  .HasPrecision(18, 2);
+
+            entity.Property(o => o.ShippingSnapshot)
+                  .HasMaxLength(400);
+
+            entity.Property(o => o.Status)
+                  .HasConversion<string>();
+
+            entity.HasOne(o => o.User)
+                  .WithMany()
                   .HasForeignKey(o => o.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(o => o.ShippingAddress)
+      .WithMany()
+      .HasForeignKey(o => o.ShippingAddressId)
+      .OnDelete(DeleteBehavior.Restrict)
+      .IsRequired(false);
+
+
+
         });
 
 
@@ -95,10 +97,60 @@ public class SportexDbContext : DbContext
             entity.Property(oi => oi.UnitPrice).HasPrecision(18, 2);
         });
 
+        // ---------------- REVIEW ----------------
+        modelBuilder.Entity<Review>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasIndex(e => new { e.ProductId, e.UserId }).IsUnique();
+
+            entity.Property(e => e.Comment)
+                  .HasMaxLength(1000)
+                  .IsRequired();   // ✅ CHANGE THIS
+
+            entity.Property(e => e.CreatedAt)
+                  .HasDefaultValueSql("GETDATE()");
+
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+     
+
+        });
+
+
+        // ---------------- REVIEW HELPFUL ----------------
+        // ---------------- REVIEW HELPFUL ----------------
+        modelBuilder.Entity<ReviewHelpful>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ReviewId, e.UserId }).IsUnique();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+
+            entity.HasOne(e => e.Review)
+                .WithMany()
+                .HasForeignKey(e => e.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.NoAction); // Changed from Cascade to NoAction
+        });
+
+        // ---------------- CART & WISHLIST ----------------
         modelBuilder.Entity<CartItem>(entity => entity.HasKey(c => c.Id));
+
         modelBuilder.Entity<WishlistItem>()
             .HasIndex(x => new { x.UserId, x.ProductId })
             .IsUnique();
     }
-
 }

@@ -1,0 +1,171 @@
+﻿@model GalleryApp.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Profile";
+}
+<style>
+    .profile-wrap {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .profile-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 40px;
+        display: flex;
+        gap: 32px;
+        align-items: flex-start;
+        margin-bottom: 32px;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--accent);
+        flex-shrink: 0;
+    }
+
+    .avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        font-family: 'Cormorant Garamond', serif;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        font-weight: 300;
+        margin-bottom: 6px;
+    }
+
+    .profile-email {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    .profile-badge {
+        display: inline-block;
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        border-radius: 1px;
+        margin-bottom: 20px;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .stat-row {
+        display: flex;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+
+    .p-stat {
+        flex: 1;
+        padding: 20px;
+        border-right: 1px solid var(--border);
+        text-align: center;
+    }
+
+        .p-stat:last-child {
+            border-right: none;
+        }
+
+    .p-stat-val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 32px;
+        font-weight: 300;
+        color: var(--accent);
+    }
+
+    .p-stat-lbl {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+</style>
+
+<div class="profile-wrap">
+
+    <div class="profile-card">
+        @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+        {
+            <img class="profile-avatar" src="@Model.ProfilePicture" alt="Profile" />
+        }
+        else
+        {
+            <div class="avatar-placeholder">
+                @if (Model.Email != null)
+                {
+                    @Model.Email[0].ToString().ToUpper()
+                }
+                else
+                {
+                    @("?")
+                }
+            </div>
+        }
+
+        <div class="profile-info">
+            <div class="profile-name">
+                @if (Model.Email != null)
+                {
+                    @Model.Email.Split('@')[0]
+                }
+            </div>
+            <div class="profile-email">@Model.Email</div>
+            <div class="profile-badge">Member</div>
+            <div class="profile-actions">
+                <a href="/Gallery/Upload" class="btn btn-primary">+ Upload Photo</a>
+                <a href="/Gallery/Index" class="btn">View Gallery</a>
+                <a href="/Account/Logout" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-row">
+        <div class="p-stat">
+            <div class="p-stat-val">
+                @if (Model.Email != null)
+                {
+                    @Model.Email.Split('@')[1]
+                }
+            </div>
+            <div class="p-stat-lbl">Domain</div>
+        </div>
+        <div class="p-stat">
+            <div class="p-stat-val">Active</div>
+            <div class="p-stat-lbl">Status</div>
+        </div>
+    </div>
+
+</div>

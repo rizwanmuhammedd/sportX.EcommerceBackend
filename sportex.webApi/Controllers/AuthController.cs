@@ -178,20 +178,24 @@ public class AuthController : ControllerBase
     {
         int userId = int.Parse(User.FindFirst("uid")!.Value);
 
-        if (dto.Image == null || dto.Image.Length == 0)
-            return BadRequest("No image uploaded");
+        if (dto.Avatar == null || dto.Avatar.Length == 0)
+            return BadRequest(ApiResponse.Fail(400, "No image uploaded"));
 
-        var fileName = $"{userId}_{Guid.NewGuid()}{Path.GetExtension(dto.Image.FileName)}";
-        var path = Path.Combine("wwwroot/avatars", fileName);
+        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatars");
+        if (!Directory.Exists(uploadsDir))
+            Directory.CreateDirectory(uploadsDir);
+
+        var fileName = $"{userId}_{Guid.NewGuid()}{Path.GetExtension(dto.Avatar.FileName)}";
+        var path = Path.Combine(uploadsDir, fileName);
 
         using var stream = new FileStream(path, FileMode.Create);
-        await dto.Image.CopyToAsync(stream);
+        await dto.Avatar.CopyToAsync(stream);
 
         var url = $"{Request.Scheme}://{Request.Host}/avatars/{fileName}";
 
         await _userService.UpdateAvatarAsync(userId, url);
 
-        return Ok(ApiResponse.Success(url));
+        return Ok(ApiResponse.Success("Avatar uploaded", new { avatarUrl = url }));
     }
 
 

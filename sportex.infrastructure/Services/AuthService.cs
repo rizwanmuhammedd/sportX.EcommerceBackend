@@ -34,10 +34,10 @@ public class AuthService : IAuthService
             string.IsNullOrWhiteSpace(dto.Password))
             throw new Exception("All fields are required");
 
-        if (!Regex.IsMatch(dto.Name, @"^[A-Za-z]{3,50}$"))
+        if (!Regex.IsMatch(dto.Name, @"^[A-Za-z ]{3,50}$"))
             throw new Exception("Name must contain only letters");
 
-        if (dto.Password.Length < 6)
+        if (dto.Password.Length < 8)
             throw new Exception("Password must be at least 6 characters");
 
         dto.Name = dto.Name.Trim();
@@ -124,12 +124,22 @@ public class AuthService : IAuthService
     // ---------------- TOKEN ----------------
     private string GenerateJwtToken(User user)
     {
+        //var claims = new[]
+        //{
+        //    new Claim("uid", user.Id.ToString()),
+        //    new Claim(ClaimTypes.Email, user.Email),
+        //    new Claim(ClaimTypes.Role, user.Role)     // 🔥 FIXED
+        //};
+
         var claims = new[]
-        {
-            new Claim("uid", user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)     // 🔥 FIXED
-        };
+   {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // ✅ CHANGE THIS!
+        new Claim("uid", user.Id.ToString()), // Keep this for compatibility
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Role, user.Role),
+            new Claim(ClaimTypes.Name, user.Name)   // ✅ ADD THIS
+
+    };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
